@@ -1,0 +1,18 @@
+TARGET = Line.exe
+OBJS = main.o
+SRCS = main.cpp
+
+CC = gcc
+CCOPTIONS = -O2
+
+MESAINCDIR = /usr/include
+MESALIBDIR = /usr/lib
+
+GLLIB = -L$(MESALIBDIR) -lglut -lGLU -lGL
+XLIB = -L$(MESALIBDIR) -lXext -lX11 -lpthread
+INCLUDES = -I$(MESAINCDIR)
+
+LOCAL_LIBRARIES = $(GLLIB) $(XLIB) -lm
+
+ComplexProgramTarget($(TARGET))
+
