@@ -18,7 +18,7 @@
 using namespace std;
 
 int Wi=640, He=480;
-
+unsigned int microseconds = 10000;
 
 void myInit (void);
 void display(void);
@@ -60,92 +60,131 @@ void GridDraw(void)
     glEnd();
 
 }
-void drawPixel2(int cx,int cy,int x,int y)
+
+int zoneDetection(int x0,int y0,int x1,int y1)
 {
-    glVertex2i(cx+x,cy+y);
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+
+    if(dx>=0 && dy>=0)
+    {
+        if(dx>=dy)      return 0;
+        else    return 1;
+    }
+    else if(dx<0 && dy>=0)
+    {
+        if(dy>=abs(dx))     return 2;
+        else    return 3;
+
+    }
+    else if(dx<0 && dy<0)
+    {
+        if(abs(dx)>=abs(dy))    return 4;
+        else    return 5;
+    }
+    else if(dx>=0 && dy<0)
+    {
+        if(abs(dy)>=dx)     return 6;
+        else    return 7;
+    }
 }
 
-void drawPixelZone(int cx,int cy,int x,int y,int zone)
+
+void drawPixel(int x,int y)
 {
+    glVertex2i(x,y);
+}
+
+void drawPixelZone(int x,int y)
+{
+    int zone = zoneDetection(0,0,x,y);
     if(zone==0)
     {
         glColor3f(1.0, 0.0, 0.0);///Red
-        drawPixel2(cx,cy,x,y);
+        drawPixel(x,y);
     }
     else if(zone==1)
     {
         glColor3f(0.0,1.0,0.0);///Green
-        drawPixel2(cx,cy,y,x);
+        drawPixel(x,y);
     }
     else if(zone==2)
     {
         glColor3f(0.0,0.0,1.0);///Blue
-        drawPixel2(cx,cy,-y,x);
+        drawPixel(x,y);
     }
     else if(zone==3)
     {
         glColor3f(1.0,1.0,0.0);///Yellow
-        drawPixel2(cx,cy,-x,y);
+        drawPixel(x,y);
     }
     else if(zone==4)
     {
         glColor3f(1.0,0.1,1.0);///Purple
-        drawPixel2(cx,cy,-x,-y);
+        drawPixel(x,y);
     }
     else if(zone==5)
     {
         glColor3f(0,1.0,1.0);///Cyan
-        drawPixel2(cx,cy,-y,-x);
+        drawPixel(x,y);
     }
     else if(zone==6)
     {
         glColor3f(1.0,1.0,1.0);///White
-        drawPixel2(cx,cy,y,-x);
+        drawPixel(x,y);
     }
     else if(zone==7)
     {
 
         glColor3f(1.0,0.5,0.0);///Orange
-        drawPixel2(cx,cy,x,-y);
+        drawPixel(x,y);
     }
 }
 
 
-void draw8Way(int cx,int cy,int x,int y)
+void draw4Way(int x,int y)
 {
-    drawPixelZone(cx,cy,x,y,0);
-    drawPixelZone(cx,cy,x,y,1);
-    drawPixelZone(cx,cy,x,y,2);
-    drawPixelZone(cx,cy,x,y,3);
-    drawPixelZone(cx,cy,x,y,4);
-    drawPixelZone(cx,cy,x,y,5);
-    drawPixelZone(cx,cy,x,y,6);
-    drawPixelZone(cx,cy,x,y,7);    
+
+    drawPixelZone(x,y);
+    drawPixelZone(-x,y);
+    drawPixelZone(x,-y);
+    drawPixelZone(-x,-y);
 }
 
-void circleDrawing(int cx,int cy,int r)
+void drawElipse(int a,int b)
 {
-    int d = 5 - 4*r;
-    int x =0,y=r;
-    draw8Way(cx,cy,x,y);
-
-
-    while(x<y)
+    float d = b*b - a*a*(b-0.25);
+    int x = 0,y=b;
+    drawPixel(x,y);
+    while(a*a*(y-0.5) > b*b*(x+1))
     {
-        if(d<0){// dE
-            d+= (8*x + 12);
+        if(d<0){//delE
+            d += b*b*(2*x+3);
             x++;
         }
-        else{//dSE
-            d+=(8*x-8*y+20);
+        else{//delSE
+            d += (b*b*(2*x+3)-a*a*(2*y-2));
             x++;
             y--;
         }
-        draw8Way(cx,cy,x,y);
+        draw4Way(x,y);
+
+        
     }
-
+    while(y>0)//R-2
+        {
+            if(d<0){//delSE
+                d += (a*a*(-2*y+3)+b*b*(2*x+2));
+                x++;
+                y--;       
+            }
+            else{
+                d+=(a*a*(-2*y+3));
+                y--;
+            }
+            draw4Way(x,y);
+        }
 }
-
 
 void display()
 {
@@ -153,43 +192,7 @@ void display()
     glColor3f(0, 0, 0);
     GridDraw();
     glBegin(GL_POINTS);
-    int microseconds = 50000;
-
-
-    int dx=5,dy=5;
-    int cx = -150,cy=150,r=30;
-
-    int Xmin = -Wi/2;
-    int Xmax = Wi/2-1;
-    int Ymin = -He/2;
-    int Ymax = He/2-1;
-
-    while(true)
-        {
-
-            if(cx+r >= Xmax || cx-r<= Xmin)
-            {
-                dx *= -1;
-            }
-            if(cy+r>= Ymax || cy-r<= Ymin)
-            {
-                dy *= -1;
-            }
-
-
-            glClear(GL_COLOR_BUFFER_BIT);
-            GridDraw();
-            glBegin(GL_POINTS);
-            circleDrawing(cx,cy,29);
-            circleDrawing(cx,cy,30);
-            circleDrawing(cx,cy,31);
-            glEnd();
-            glFlush();
-            usleep(microseconds);
-            cx += dx;
-            cy += dy;
-        }
-
+    drawElipse(200,100);
     glEnd();
     glFlush();
 }

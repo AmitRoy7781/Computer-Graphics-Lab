@@ -18,7 +18,7 @@
 using namespace std;
 
 int Wi=640, He=480;
-
+unsigned int microseconds = 10000;
 
 void myInit (void);
 void display(void);
@@ -129,7 +129,6 @@ void circleDrawing(int cx,int cy,int r)
     int x =0,y=r;
     draw8Way(cx,cy,x,y);
 
-
     while(x<y)
     {
         if(d<0){// dE
@@ -153,7 +152,7 @@ void display()
     glColor3f(0, 0, 0);
     GridDraw();
     glBegin(GL_POINTS);
-    int microseconds = 50000;
+
 
 
     int dx=5,dy=5;
@@ -167,11 +166,11 @@ void display()
     while(true)
         {
 
-            if(cx+r >= Xmax || cx-r<= Xmin)
+            if(cx+r+dx >= Xmax || cx-r+dx<= Xmin)
             {
                 dx *= -1;
             }
-            if(cy+r>= Ymax || cy-r<= Ymin)
+            if(cy+r+dy>= Xmax || cy-r+dy<= Xmin)
             {
                 dy *= -1;
             }
