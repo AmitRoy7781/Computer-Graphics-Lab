@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <GL/glut.h>
 #define  PI acos(-1.0)
-#define  COLORED false
+#define  COLORED true
 
 using namespace std;
 
@@ -24,12 +24,6 @@ unsigned int microseconds = 10000;
 void myInit (void);
 void display(void);
 void reshape (int w, int h);
-
-void GridDraw(void);
-void drawPixel(int x,int y);
-void draw_line0(int x,int y,int x0,int y0);
-int zoneDetection(int x0,int y0,int x1,int y1);
-void drawLine(int x0,int y0,int x1,int y1);
 
 void myInit (void)
 {
@@ -91,79 +85,78 @@ int zoneDetection(int x0,int y0,int x1,int y1)
 }
 
 
-void drawPixel(int x,int y)
+void drawPixel(int cx,int cy,int x,int y)
 {
-    glVertex2i(x,y);
+    glVertex2i(cx+x,cy+y);
 }
 
-void drawPixelZone(int x,int y)
+void drawPixelZone(int cx,int cy,int x,int y)
 {
     int zone = zoneDetection(0,0,x,y);
     if(zone==0)
     {
         if(COLORED)
             glColor3f(1.0, 0.0, 0.0);///Red
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==1)
     {
         if(COLORED)
             glColor3f(0.0,1.0,0.0);///Green
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==2)
     {
         if(COLORED)
             glColor3f(0.0,0.0,1.0);///Blue
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==3)
     {
         if(COLORED)
                 glColor3f(1.0,1.0,0.0);///Yellow
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==4)
     {
         if(COLORED)
             glColor3f(1.0,0.1,1.0);///Purple
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==5)
     {
         if(COLORED)
             glColor3f(0,1.0,1.0);///Cyan
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==6)
     {
         if(COLORED)
             glColor3f(1.0,1.0,1.0);///White
-        drawPixel(x,y);
+        drawPixel(cx,cy,x,y);
     }
     else if(zone==7)
     {
         if(COLORED)
-        glColor3f(1.0,0.5,0.0);///Orange
-        drawPixel(x,y);
+            glColor3f(1.0,0.5,0.0);///Orange
+        drawPixel(cx,cy,x,y);
     }
 }
 
 
-void draw4Way(int x,int y)
+void draw4Way(int cx,int cy,int x,int y)
 {
-
-    drawPixelZone(x,y);
-    drawPixelZone(-x,y);
-    drawPixelZone(x,-y);
-    drawPixelZone(-x,-y);
+    drawPixelZone(cx,cy,x,y);
+    drawPixelZone(cx,cy,-x,y);
+    drawPixelZone(cx,cy,x,-y);
+    drawPixelZone(cx,cy,-x,-y);
 }
 
-void drawElipse(int a,int b)
+void drawElipse(int cx,int cy,int a,int b)
 {
     float d = b*b - a*a*(b-0.25);
     int x = 0,y=b;
-    drawPixel(x,y);
+    drawPixel(cx,cy,x,y);
     while(a*a*(y-0.5) > b*b*(x+1))
     {
         if(d<0){//delE
@@ -175,7 +168,7 @@ void drawElipse(int a,int b)
             x++;
             y--;
         }
-        draw4Way(x,y);
+        draw4Way(cx,cy,x,y);
 
         
     }
@@ -190,19 +183,91 @@ void drawElipse(int a,int b)
                 d+=(a*a*(-2*y+3));
                 y--;
             }
-            draw4Way(x,y);
+            draw4Way(cx,cy,x,y);
         }
 }
 
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(0, 0, 0);
-    GridDraw();
-    glBegin(GL_POINTS);
-    drawElipse(200,100);
+     glClear(GL_COLOR_BUFFER_BIT);
+    // glColor3f(0, 0, 0);
+    // GridDraw();
+     glBegin(GL_POINTS);
+
+    int Xmin = -Wi/2;
+    int Xmax = Wi/2-1;
+    int Ymin = -He/2;
+    int Ymax = He/2-1;
+
+    int cx=0;
+    int cy=100;
+    int a=50;
+    int b=50;
+    int dy;
+    int MOD = He/20;
+
+    while(true)
+    {
+
+    dy = 1;
+
+    while(cy+dy-60>=Ymin)
+        {
+            cy -=dy;
+            //dy--;
+            glClear(GL_COLOR_BUFFER_BIT);
+            glBegin(GL_POINTS);
+            drawElipse(cx,cy,a,b);
+            glEnd();
+            glutSwapBuffers();
+            if(cy%MOD==0)
+                dy++;
+        }
+
+
+    while(b>=30)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBegin(GL_POINTS);
+        drawElipse(cx,cy,a,b);
+        glEnd();
+        glutSwapBuffers();
+        a+=1;
+        b--;
+        cy--;
+    }
+
+    while(a!=b)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBegin(GL_POINTS);
+        drawElipse(cx,cy,a,b);
+        glEnd();
+        glutSwapBuffers();
+        a-=1;
+        b+=1;
+        cy++;
+    }
+
+    a = 50;
+    b = 50;
+    while(cy<=100)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBegin(GL_POINTS);
+        drawElipse(cx,cy,a,b);
+        glEnd();
+        glutSwapBuffers();
+        cy+=dy;
+        if(cy%MOD==0)
+            dy--;
+        
+    }
+
     glEnd();
-    glFlush();
+    glutSwapBuffers();
+
+    }
 }
 
 
@@ -210,7 +275,7 @@ int main (int argc, char **argv)
 {
 
     glutInit (&argc, argv); // to initialize the toolkit;
-    glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); // sets the display mode
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB); // sets the display mode
     glutInitWindowSize (Wi, He); // sets the window size
     glutInitWindowPosition (0, 0); // sets the starting position for the window
     glutCreateWindow ("Graphics Lab 2"); // creates the window and sets the title

@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <GL/glut.h>
 #define  PI acos(-1.0)
-#define  COLORED false
+#define  COLORED true
 
 using namespace std;
 
@@ -161,37 +161,38 @@ void draw4Way(int x,int y)
 
 void drawElipse(int a,int b)
 {
-    float d = b*b - a*a*(b-0.25);
-    int x = 0,y=b;
+    int d = 4*b*b*(-2*a+1) + 4*a*a;
+    int x = a,y=0;
     drawPixel(x,y);
-    while(a*a*(y-0.5) > b*b*(x+1))
+    while(b*b*(4*x-2) > 4*a*a*(y+1))
     {
-        if(d<0){//delE
-            d += b*b*(2*x+3);
-            x++;
+        if(d<0){//delN
+            d += 4*a*a*(2*y+3);
+            y++;
         }
-        else{//delSE
-            d += (b*b*(2*x+3)-a*a*(2*y-2));
-            x++;
-            y--;
+        else{//delNW
+            d += 4*b*b*(-2*x+2) + 4*a*a*(2*y+3);
+            y++;
+            x--;
         }
         draw4Way(x,y);
-
         
     }
-    while(y>0)//R-2
-        {
-            if(d<0){//delSE
-                d += (a*a*(-2*y+3)+b*b*(2*x+2));
-                x++;
-                y--;       
-            }
-            else{
-                d+=(a*a*(-2*y+3));
-                y--;
-            }
-            draw4Way(x,y);
+    while(x>0)
+    {
+        
+        if(d<0){//delNW
+            d += 4*b*b*(-2*x+3) + 4*a*a*(2*y+2);
+            y++;
+            x--;
         }
+        else{//delW
+            d += 4*b*b*(-2*x+3);
+            x--;
+        }
+        draw4Way(x,y);
+        
+    }
 }
 
 void display()
@@ -202,7 +203,7 @@ void display()
     glBegin(GL_POINTS);
     drawElipse(200,100);
     glEnd();
-    glFlush();
+    glutSwapBuffers();
 }
 
 
@@ -210,7 +211,7 @@ int main (int argc, char **argv)
 {
 
     glutInit (&argc, argv); // to initialize the toolkit;
-    glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); // sets the display mode
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB); // sets the display mode
     glutInitWindowSize (Wi, He); // sets the window size
     glutInitWindowPosition (0, 0); // sets the starting position for the window
     glutCreateWindow ("Graphics Lab 2"); // creates the window and sets the title
